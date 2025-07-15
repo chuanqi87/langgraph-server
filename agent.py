@@ -1,9 +1,9 @@
 import os
 from typing import TypedDict, Annotated
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langgraph.graph import StateGraph, END
-from langgraph.prebuilt import ToolExecutor
+from langgraph.graph import StateGraph, END, START
 from langgraph.checkpoint.memory import MemorySaver
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 import operator
 
 # 定义状态
@@ -34,13 +34,20 @@ def create_agent():
         system_prompt = """你是一个有用的AI助手，基于 LangGraph 构建。
 请用中文回复用户的问题，保持友好和专业的态度。"""
         
-        # 格式化消息
-        formatted_messages = [{"role": "system", "content": system_prompt}]
+        # 格式化消息为 LangChain 消息格式
+        formatted_messages = [SystemMessage(content=system_prompt)]
         for msg in messages:
             if isinstance(msg, dict):
-                formatted_messages.append(msg)
+                if msg.get("role") == "user":
+                    formatted_messages.append(HumanMessage(content=msg["content"]))
+                elif msg.get("role") == "assistant":
+                    formatted_messages.append(AIMessage(content=msg["content"]))
+                else:
+                    formatted_messages.append(HumanMessage(content=str(msg)))
+            elif isinstance(msg, str):
+                formatted_messages.append(HumanMessage(content=msg))
             else:
-                formatted_messages.append({"role": "user", "content": str(msg)})
+                formatted_messages.append(HumanMessage(content=str(msg)))
         
         # 调用模型
         response = llm.invoke(formatted_messages)
@@ -53,10 +60,8 @@ def create_agent():
     # 添加节点
     workflow.add_node("agent", call_model)
     
-    # 设置入口点
-    workflow.set_entry_point("agent")
-    
-    # 设置结束点
+    # 设置入口点和边
+    workflow.add_edge(START, "agent")
     workflow.add_edge("agent", END)
     
     # 添加内存

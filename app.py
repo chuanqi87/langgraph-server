@@ -4,14 +4,33 @@ import os
 from dotenv import load_dotenv
 from agent import create_agent
 import asyncio
+from contextlib import asynccontextmanager
 
 # 加载环境变量
 load_dotenv()
 
+# 全局变量存储 agent
+agent = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """应用生命周期管理"""
+    global agent
+    try:
+        agent = create_agent()
+        print("Agent 初始化成功")
+    except Exception as e:
+        print(f"Agent 初始化失败: {e}")
+        raise
+    yield
+    # 清理资源（如果需要）
+    print("应用关闭")
+
 app = FastAPI(
     title="LangGraph Agent Service",
     description="基于 LangGraph 构建的 Agent 服务，集成 Gemini 模型",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # 请求模型
@@ -22,20 +41,6 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     response: str
     session_id: str
-
-# 全局变量存储 agent
-agent = None
-
-@app.on_event("startup")
-async def startup_event():
-    """应用启动时初始化 agent"""
-    global agent
-    try:
-        agent = create_agent()
-        print("Agent 初始化成功")
-    except Exception as e:
-        print(f"Agent 初始化失败: {e}")
-        raise
 
 @app.get("/")
 async def root():

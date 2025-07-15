@@ -1,9 +1,23 @@
-fastapi==0.104.1
-uvicorn==0.24.0
-langgraph==0.0.62
-langchain==0.1.20
-langchain-google-genai==1.0.8
-google-generativeai==0.3.2
-pydantic==2.5.0
-python-dotenv==1.0.0
-httpx==0.25.2 
+# Web Framework
+fastapi==0.116.1
+uvicorn==0.34.0
+
+# LangChain & LangGraph
+langgraph==0.3.28
+langchain==0.3.23
+langchain-google-genai==2.0.11
+
+# Google AI
+google-generativeai==0.8.5
+
+# Data Validation & Models
+pydantic==2.10.4
+
+# Environment & Configuration
+python-dotenv==1.0.1
+
+# HTTP Client
+httpx==0.28.1
+
+# Development Tools
+packaging==24.2 
