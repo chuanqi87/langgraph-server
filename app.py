@@ -62,7 +62,7 @@ async def chat(request: ChatRequest):
         # 调用 agent 处理消息
         response = await agent.ainvoke(
             {"messages": [{"role": "user", "content": request.message}]},
-            config={"configurable": {"session_id": request.session_id}}
+            config={"configurable": {"thread_id": request.session_id}}
         )
         
         # 提取最后一条消息作为回复

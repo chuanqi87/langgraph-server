@@ -80,7 +80,7 @@ async def test_agent():
     # 测试对话
     response = await agent.ainvoke(
         {"messages": [{"role": "user", "content": "你好，请介绍一下你自己"}]},
-        config={"configurable": {"session_id": "test"}}
+        config={"configurable": {"thread_id": "test"}}
     )
     
     print("测试回复:", response["messages"][-1]["content"])
