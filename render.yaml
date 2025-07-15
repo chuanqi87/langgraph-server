@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: langgraph-agent-service
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+    healthCheckPath: /health
+    autoDeploy: true
+    disk:
+      name: langgraph-agent-disk
+      mountPath: /tmp
+      sizeGB: 1 
