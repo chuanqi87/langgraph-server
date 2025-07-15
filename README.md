@@ -39,11 +39,15 @@ cp env_template.txt .env
 ### 3. 本地运行
 
 ```bash
-# 启动服务
-python app.py
+# 方式1：使用快速启动脚本
+python start.py
 
-# 或使用 uvicorn
-uvicorn app:app --host 0.0.0.0 --port 8000
+# 方式2：直接使用 uvicorn
+uvicorn src.langgraph_agent.main:app --host 0.0.0.0 --port 8000
+
+# 方式3：安装为包后运行
+pip install -e .
+langgraph-agent
 ```
 
 ### 4. 验证环境
@@ -103,19 +107,27 @@ Content-Type: application/json
 
 ```
 langgraph-server/
-├── app.py              # FastAPI 主应用
-├── agent.py            # LangGraph Agent 实现
-├── requirements.txt    # Python 依赖
-├── env_template.txt    # 环境变量模板
-├── render.yaml         # Render 部署配置
-├── Dockerfile          # Docker 配置
-├── start.py           # 快速启动脚本
-├── check_versions.py  # 版本兼容性检查
-├── test_service.py    # 本地测试脚本
-├── deploy_test.py     # 部署验证脚本
-├── DEPLOY_GUIDE.md    # 详细部署指南
-├── README.md          # 项目说明
-└── .gitignore         # Git 忽略文件
+├── src/                    # 源代码目录
+│   └── langgraph_agent/    # 主应用包
+│       ├── __init__.py     # 包初始化
+│       ├── main.py         # FastAPI 主应用
+│       ├── agent.py        # LangGraph Agent 实现
+│       └── config.py       # 配置管理
+├── tests/                  # 测试目录
+│   ├── __init__.py         # 测试包初始化
+│   └── test_agent.py       # Agent 测试
+├── scripts/                # 工具脚本目录
+│   ├── test_deployment.py  # 部署后服务测试
+│   ├── check_versions.py   # 版本兼容性检查
+│   └── README.md           # 工具脚本说明
+├── requirements.txt        # Python 依赖
+├── setup.py               # 包安装配置
+├── env_template.txt       # 环境变量模板
+├── render.yaml            # Render 部署配置
+├── Dockerfile             # Docker 配置
+├── start.py              # 快速启动脚本
+├── README.md             # 项目说明
+└── .gitignore            # Git 忽略文件
 ```
 
 ## 📚 技术栈
@@ -127,11 +139,30 @@ langgraph-server/
 - **Google Gemini 1.5 Flash**: 高性能大语言模型
 - **Uvicorn 0.34.0**: ASGI 服务器
 
+## 🛠️ 工具脚本
+
+项目包含了一些有用的工具脚本，位于 `scripts/` 目录：
+
+### 服务测试
+```bash
+# 测试部署后的服务
+pip install requests
+python3 scripts/test_deployment.py [服务地址]
+```
+
+### 版本检查
+```bash
+# 检查依赖版本兼容性
+python3 scripts/check_versions.py
+```
+
+更多详细信息请参考 [scripts/README.md](scripts/README.md)
+
 ## 💡 开发指南
 
 ### 扩展 Agent 功能
 
-编辑 `agent.py` 文件，可以添加更多功能：
+编辑 `src/langgraph_agent/agent.py` 文件，可以添加更多功能：
 
 ```python
 # 添加自定义节点
@@ -145,14 +176,30 @@ workflow.add_node("custom", custom_node)
 
 ### 修改模型参数
 
-在 `agent.py` 中调整模型配置：
+在 `src/langgraph_agent/config.py` 中调整配置：
 
 ```python
-llm = ChatGoogleGenerativeAI(
-    model="gemini-1.5-flash",  # 或 gemini-1.5-pro
-    temperature=0.7,           # 调整创造性
-    max_output_tokens=1024,    # 最大输出长度
-)
+# 修改默认配置
+DEFAULT_MODEL = "gemini-1.5-pro"  # 或 gemini-1.5-flash
+DEFAULT_TEMPERATURE = 0.8         # 调整创造性
+DEFAULT_MAX_TOKENS = 2048         # 最大输出长度
+```
+
+### 开发环境设置
+
+```bash
+# 安装开发依赖
+pip install -e ".[dev]"
+
+# 运行测试
+pytest tests/
+
+# 代码格式化
+black src/ tests/
+isort src/ tests/
+
+# 类型检查
+mypy src/
 ```
 
 ## 🔧 故障排除
